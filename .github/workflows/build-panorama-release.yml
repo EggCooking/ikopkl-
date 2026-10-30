@@ -39,8 +39,10 @@ jobs:
           used = set()
           names = []
           for image in images:
-              folder_name = image.parents[4].name
-              label = re.sub(r"^Patrix Background [^ ]+(?: [^ ]+)? ", "", folder_name, flags=re.I)
+              folder_name = image.parents[6].name
+              version_folder = image.parents[7].name
+              version = version_folder.removeprefix("Version ")
+              label = folder_name.removeprefix(f"Patrix Background {version} ")
               suffix = re.sub(r"[^a-z0-9]", "", label.lower())
               if not suffix:
                   suffix = re.sub(r"[^a-z0-9]", "", folder_name.lower())
