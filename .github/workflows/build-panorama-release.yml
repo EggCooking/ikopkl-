@@ -36,8 +36,11 @@ jobs:
           if len(images) != 56:
               raise SystemExit(f"Expected 56 panorama images, found {len(images)}")
 
-          # Use an existing panorama overlay as the resource-pack icon.
-          shutil.copy2(images[0], output / "pack.png")
+          # Use the exact cover image selected from the source collection.
+          icon = source / "Version 1.3/Patrix Background 1.3 Bamboo House 2/pack.png"
+          if not icon.is_file():
+              raise SystemExit(f"Resource-pack cover image not found: {icon}")
+          shutil.copy2(icon, output / "pack.png")
 
           used = set()
           names = []
