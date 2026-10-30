@@ -1,0 +1,85 @@
+name: Build Panorama Collection Release
+
+on:
+  push:
+    paths:
+      - ".github/workflows/build-panorama-release.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out mod repository
+        uses: actions/checkout@v4
+      - name: Check out panorama source packs
+        uses: actions/checkout@v4
+        with:
+          repository: EggCooking/panoramas
+          path: panorama-source
+      - name: Build combined resource pack
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import json, re, shutil, zipfile
+
+          source = Path("panorama-source")
+          output = Path("Panorama-Collection")
+          target = output / "assets/minecraft/textures/gui/title/background"
+          target.mkdir(parents=True, exist_ok=True)
+
+          images = sorted(source.glob("Version */*/assets/minecraft/textures/gui/title/background/panorama_overlay.png"))
+          if len(images) != 56:
+              raise SystemExit(f"Expected 56 panorama images, found {len(images)}")
+
+          used = set()
+          names = []
+          for image in images:
+              folder_name = image.parents[4].name
+              label = re.sub(r"^Patrix Background [^ ]+(?: [^ ]+)? ", "", folder_name, flags=re.I)
+              suffix = re.sub(r"[^a-z0-9]", "", label.lower())
+              if not suffix:
+                  suffix = re.sub(r"[^a-z0-9]", "", folder_name.lower())
+              filename = f"panorama_overlay_{suffix}.png"
+              if filename in used:
+                  raise SystemExit(f"Duplicate output filename: {filename}")
+              used.add(filename)
+              shutil.copy2(image, target / filename)
+              names.append(filename)
+
+          (output / "pack.mcmeta").write_text(json.dumps({
+              "pack": {
+                  "description": "Panorama Collection - 56 randomizable title overlays",
+                  "min_format": 84,
+                  "max_format": 84
+              }
+          }, indent=2) + "\n", encoding="utf-8")
+          (output / "README.txt").write_text(
+              "Panorama Collection for Minecraft Java 26.1.2\n"
+              "56 panorama overlays. Place this folder/ZIP in resourcepacks and enable it.\n"
+              "Images are stored at assets/minecraft/textures/gui/title/background/\n\n"
+              + "\n".join(names) + "\n",
+              encoding="utf-8"
+          )
+
+          with zipfile.ZipFile("Panorama-Collection-26.1.2.zip", "w", compression=zipfile.ZIP_STORED) as archive:
+              for file in sorted(output.rglob("*")):
+                  if file.is_file():
+                      archive.write(file, file.relative_to(output.parent))
+          print(f"Packaged {len(names)} panorama overlays.")
+          PY
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: panorama-collection-26.1.2
+          name: Panorama Collection (Minecraft 26.1.2)
+          body: |
+            Combined resource pack containing 56 panorama overlays from EggCooking/panoramas.
+
+            Every image follows the requested naming format: panorama_overlay_filename.png
+          files: Panorama-Collection-26.1.2.zip
+          fail_on_unmatched_files: true
