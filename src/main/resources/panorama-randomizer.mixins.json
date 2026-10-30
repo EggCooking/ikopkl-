@@ -1,0 +1,11 @@
+{
+  "required": true,
+  "package": "dev.chatgpt.panoramarandomizer.mixin",
+  "client": [
+    "TitleScreenMixin",
+    "MultiPackResourceManagerMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

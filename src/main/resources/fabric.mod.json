@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "panorama_randomizer",
+  "version": "${version}",
+  "name": "Panorama Randomizer",
+  "description": "Randomly selects a panorama overlay when the Minecraft title screen opens.",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "dev.chatgpt.panoramarandomizer.PanoramaRandomizerClient"
+    ]
+  },
+  "mixins": [
+    "panorama-randomizer.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.19.3",
+    "minecraft": "26.1.2",
+    "java": ">=25"
+  }
+}
