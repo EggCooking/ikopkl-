@@ -36,6 +36,9 @@ jobs:
           if len(images) != 56:
               raise SystemExit(f"Expected 56 panorama images, found {len(images)}")
 
+          # Use an existing panorama overlay as the resource-pack icon.
+          shutil.copy2(images[0], output / "pack.png")
+
           used = set()
           names = []
           for image in images:
